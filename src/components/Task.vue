@@ -2,10 +2,21 @@
 .content-wrapper
 	section
 		.container
-			h1.ui-title-1 Tasks
+			.task-list__header
+				h1.ui-title-1 Tasks
+				.buttons-list
+					.button.button--round.button-default(
+						@click="filter = 'active'"
+					) Active
+					.button.button--round.button-default(
+						@click="filter = 'completed'"
+					) completed
+					.button.button--round.button-default(
+						@click="filter = 'all'"
+					) All
 			.task-list
 				.task-item(
-					v-for="task in tasks"
+					v-for="task in taskFilter"
 					:key="task.title"
 					:class="{completed: task.completed}"
 				)
@@ -13,7 +24,7 @@
 						.task-item__info
 							.task-item__main-info 
 								span.ui-label.ui-label--light {{ task.whatWatch }}
-								span Total time:
+								span Total time: {{ task.time }}
 							span.button-close
 						.task-item__content
 							.task-item__header
@@ -23,45 +34,68 @@
 										v-model="task.completed"
 									)
 								span.ui-title-3 {{ task.title }}
-							.task-item__description
+							.task-item__body
 								p.ui-text-regular {{ task.description }}
-
+							.task-item__footer
+								.tag-list
+									.ui-tag__wrapper(
+										v-for="tag in task.tags"
+										:key="tag.title"
+									)
+										.ui-tag
+											span.tag-title {{ tag.title }}
 </template>
 
 <script>
 export default {
 	data() {
 		return {
-			tasks: [
-				{
-					'id': 1,
-					'title': 'GrowthBusters: Hooked on Growth',
-					'description': 'I directed this documentary challenging the myths linking growth with prosperity and fulfillment. It explores how our beliefs about economic and consumption',
-					'whatWatch': 'Film',
-					'completed': false,
-					'editing': false
-				},
-				{
-					'id': 2,
-					'title': 'Game of thrones',
-					'description': 'Best serials',
-					'whatWatch': 'Serial',
-					'completed': false,
-					'editing': false
-				}
-			]
+			filter: 'active',
+		}
+	},
+	computed: {
+		taskFilter() {
+			if(this.filter === 'active') {
+				return this.$store.getters.tasksActive
+			} else if(this.filter === 'completed') {
+				return this.$store.getters.tasksCompleted
+			} else if(this.filter === 'all') {
+				return this.$store.getters.tasks
+			}
+			return this.filter === 'active'
+		},
+		tasks() {
+			return this.$store.getters.tasks
 		}
 	}
 }
 </script>
 
 <style lang="stylus" scoped>
+.task-list__header
+	display flex
+	align-items center
+	justify-content space-between
+	.button
+		margin-right 8px
+		&:last-child
+			margin-right 0
 .task-item
 		margin-bottom 20px
 		&:last-child
 			margin-bottom 0
 .ui-label
 		margin-right 8px
+
+.task-item
+	&.completed
+		.ui-checkbox:checked:before
+			border-color: #909399
+		.ui-title-3,
+		.ui-text-regular,
+		.ui-tag
+			text-decoration line-through
+			color: #909399
 
 .task-item__info
 	display flex

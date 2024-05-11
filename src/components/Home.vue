@@ -112,7 +112,6 @@
 					)
 						span.tag-title {{ tag.title }}
 						span.button-close
-			p.tag-used {{ tagsUsed.join(', ') }}
 			.button.button--round.button-primary(
 				@click="newTask"
 			) Send
@@ -141,32 +140,17 @@ export default {
 			//Tags
 			tagMenuShow: false,
 			tagsUsed: [],
-			tags: [
-				{
-					title: "Comedy",
-					used: false
-				},
-				{
-					title: "Westerns",
-					used: false
-				},
-				{
-					title: "Adventure",
-					used: false
-				},
-			],
 		}
 	},
 	methods: {
 		newTag() {
 			if(this.tagTitle === '') return
-			this.tags.push({
+			
+			const tag = {
 				title: this.tagTitle,
 				used: false
-			})
-			// const tag ={
-			// 	title: this.tagTitle
-			// }
+			}
+			this.$store.dispatch('newTag', tag)
 		},
 		newTask () {
 			if(this.taskTitle === '') return
@@ -177,21 +161,26 @@ export default {
 				time = this.serialTime
 			}
 			const task = {
-				id: this.taskId,
+				// id: this.taskId,
 				title: this.taskTitle,
 				description: this.taskDescription,
 				whatWatch: this.whatWatch,
 				time,
-				tags: this.tags,
+				tags: this.tagsUsed,
 				completed: false,
-				editing: false
+				editing: false,
 			}
 			console.log(task);
 			
+			this.$store.dispatch('newTask', task)
 
-			this.taskId += 1
+			// this.taskId += 1
 			this.taskTitle = ''
 			this.taskDescription = ''
+			this.tagUsed = []
+			for(let i = 0; i < this.tags.length; i++) {
+				this.tags[i].used = false
+			}
 		},
 		getHoursAndMinutes (minutes){
 			let hours = Math.trunc(minutes / 60)
@@ -201,9 +190,10 @@ export default {
 		addTagUsed(tag) {
 			tag.used = !tag.used
 			if(tag.used) {
-				this.tagsUsed.push(tag.title)
+				this.tagsUsed.push({title: tag.title})
 			} else {
-				this.tagsUsed.splice(this.tagsUsed.indexOf(tag.title), 1)
+				this.tagsUsed
+				.splice(this.tagsUsed.indexOf({title: tag.title}), 1)
 			}
 		}
 	},
@@ -215,7 +205,10 @@ export default {
 		serialTime() {
 			let min = this.serialSeasons * this.serialEpisodes * this.serialEpisodeDuration
 			return this.getHoursAndMinutes(min)
-		}
+		},
+		tags() {
+			return this.$store.getters.tags
+		}		
 	}
 }
 </script>
