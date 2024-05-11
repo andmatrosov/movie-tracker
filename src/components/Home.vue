@@ -35,96 +35,192 @@
 				label(
 					for="radioSerial"
 				) Serial
-			.total-time 
+			.total-time
+
+				//Serial Time	
 				.total-tiime__film(
 					v-if="whatWatch === 'Film'"
 				)
-					span Total Film Times 
+					span.time-title Hours
+					input.time-input(
+						type="number"
+						v-model="filmHours"
+					)
+					span.time-title Minutes 
+					input.time-input(
+						type="number"
+						v-model="filmMinutes"
+					)
+
+					p {{ filmTime }}
+
+				//Serial Time	
 				.total-tiime__serial(
 					v-else
 				)
-					span Total Serial Times 
-			.tag-list
-				.ui-tag__wrapper
-					.ui-tag
-						span.tag-title Dogs
-						span.button-close
-	section
-		.container
-			.task-list
-				.task-item(
-					v-for="task in tasks"
-					:key="task.title"
-					:class="{completed: task.completed}"
-				)
-					.ui-card.ui-card--shadow
-						.task-item__info
-							.task-item__main-info 
-								span.ui-label.ui-label--light {{ task.whatWatch }}
-								span Total time:
-							span.button-close
-						.task-item__content
-							.task-item__header
-								.ui-checkbox-wrapper
-									input.ui-checkbox(
-										type='checkbox'
-										v-model="task.completed"
-									)
-								span.ui-title-3 {{ task.title }}
-							.task-item__description
-								p.ui-text-regular {{ task.description }}
+					span.time-title How many seasons?
+					input.time-input(
+						type="number"
+						v-model="serialSeasons"
+					)
+					span.time-title How many episodes? 
+					input.time-input(
+						type="number"
+						v-model="serialEpisodes"
+					)
+					span.time-title How long is one episode? (minutes) 
+					input.time-input(
+						type="number"
+						v-model="serialEpisodeDuration"
+						min="0"
+						max="60"
+					)
 
+					p {{ serialTime }}
+
+			.tag-list.tag-list--add
+				.ui-tag__wrapper(
+					@click="tagMenuShow = !tagMenuShow"
+				)
+					.ui-tag
+						span.tag-title Add tag
+						span.button-close(
+							:class="{active: !tagMenuShow}"
+						)
+			
+			.tag-list.tag-list--menu(
+				v-if="tagMenuShow"
+			)
+				input.tag-add--input(
+					type="text"
+					placeholder="New tag"
+					v-model="tagTitle"
+					@keyup.enter="newTag"
+				)
+				.button.button-default(
+					@click="newTag"
+				) Send
+
+			.tag-list
+				.ui-tag__wrapper(
+					v-for="tag in tags"
+					:key="tag.title"
+				)
+					.ui-tag(
+						@click="addTagUsed(tag)"
+						:class="{used: tag.used}"
+					)
+						span.tag-title {{ tag.title }}
+						span.button-close
+			p.tag-used {{ tagsUsed.join(', ') }}
+			.button.button--round.button-primary(
+				@click="newTask"
+			) Send
 </template>
 
 <script>
 export default {
 	data () {
 		return {
+			// Tags
+			tagTitle: "",
 			taskTitle: "",
+			taskDescription: "",
 			whatWatch: 'Film',
 			taskId: 3,
-			taskDescription: "",
-			tasks: [
+
+			// Total time
+			// Film
+			filmHours: 1,
+			filmMinutes: 30,
+			// Serial
+			serialSeasons: 1,
+			serialEpisodes: 11,
+			serialEpisodeDuration: 40,
+
+			//Tags
+			tagMenuShow: false,
+			tagsUsed: [],
+			tags: [
 				{
-					'id': 1,
-					'title': 'GrowthBusters: Hooked on Growth',
-					'description': 'I directed this documentary challenging the myths linking growth with prosperity and fulfillment. It explores how our beliefs about economic and consumption',
-					'whatWatch': 'Film',
-					'completed': false,
-					'editing': false
+					title: "Comedy",
+					used: false
 				},
 				{
-					'id': 2,
-					'title': 'Game of thrones',
-					'description': 'Best serials',
-					'whatWatch': 'Serial',
-					'completed': false,
-					'editing': false
-				}
-			]
+					title: "Westerns",
+					used: false
+				},
+				{
+					title: "Adventure",
+					used: false
+				},
+			],
 		}
 	},
 	methods: {
+		newTag() {
+			if(this.tagTitle === '') return
+			this.tags.push({
+				title: this.tagTitle,
+				used: false
+			})
+			// const tag ={
+			// 	title: this.tagTitle
+			// }
+		},
 		newTask () {
 			if(this.taskTitle === '') return
-			this.tasks.push({
+			let time;
+			if (this.whatWatch === 'Film') {
+				time = this.filmTime
+			} else {
+				time = this.serialTime
+			}
+			const task = {
 				id: this.taskId,
 				title: this.taskTitle,
 				description: this.taskDescription,
 				whatWatch: this.whatWatch,
+				time,
+				tags: this.tags,
 				completed: false,
 				editing: false
-			})
+			}
+			console.log(task);
+			
 
 			this.taskId += 1
 			this.taskTitle = ''
 			this.taskDescription = ''
+		},
+		getHoursAndMinutes (minutes){
+			let hours = Math.trunc(minutes / 60)
+			let min = minutes % 60
+			return hours + ' Hours ' + min + ' Minutes' 
+		},
+		addTagUsed(tag) {
+			tag.used = !tag.used
+			if(tag.used) {
+				this.tagsUsed.push(tag.title)
+			} else {
+				this.tagsUsed.splice(this.tagsUsed.indexOf(tag.title), 1)
+			}
+		}
+	},
+	computed: {
+		filmTime () {
+			let min = this.filmHours * 60 + this.filmMinutes
+			return this.getHoursAndMinutes(min)
+		},
+		serialTime() {
+			let min = this.serialSeasons * this.serialEpisodes * this.serialEpisodeDuration
+			return this.getHoursAndMinutes(min)
 		}
 	}
 }
 </script>
 
-<style lang="stylus" scoper>
+<style lang="stylus" scoped>
 .option-list
 	display flex
 	align-items center
@@ -136,30 +232,49 @@ export default {
 		margin-bottom 0
 		&:last-child
 			margin-right 0
-.task-item
-		margin-bottom 20px
-		&:last-child
-			margin-bottom 0
-.ui-label
-		margin-right 8px
 
-.task-item__info
+.total-time
+	margin-bottom 20px
+
+.time-title
+	display block
+	margin-bottom 6px
+
+.time-input
+	max-width 80px
+	margin-right 10px
+
+.tag-list
+	margin-bottom 20px
+
+.ui-tag__wrapper
+	margin-right 18px
+	margin-bottom 10px
+	&:last-child
+		margin-right 0
+
+.ui-tag
+	.button-close
+		transform rotate(0deg)
+		&.active 
+			transform rotate(45deg)
+
+	&.used
+		background-color #444ce0
+		color: #fff
+		.button-close
+			transform rotate(45deg)
+			&::before
+			&::after
+				background-color #fff
+
+.tag-list--menu
 	display flex
 	align-items center
 	justify-content space-between
-	margin-bottom 20px
-	.button-close
-		width 20px
-		height @width
-	
-.task-item__header
-	display flex
-	align-items center
-	margin-bottom 18px
-	.ui-checkbox-wrapper
-		margin-right 9px
-		.ui-checkbox
-			height initial
-	.ui-title-3
-		margin-bottom 0
+
+.tag-add--input
+	margin-bottom 0
+	margin-right 10px
+	height 42px
 </style>

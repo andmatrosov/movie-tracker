@@ -9,6 +9,6 @@
 <script>
 </script>
 
-<style lang="stylus" scoper>
+<style lang="stylus" scoped>
 
 </style>
