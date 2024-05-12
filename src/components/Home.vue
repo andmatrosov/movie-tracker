@@ -1,14 +1,18 @@
 <template lang="pug">
 .content-wrapper
 	section
-		.container
+		.container(v-auto-animate)
 			h1.ui-title-1 Home
-			input(
-				type="text"
-				placeholder="What i will watch?"
-				v-model="taskTitle"
-				@keyup.enter="newTask"
-			)
+			.form-item(:class="{errorInput: v$.taskTitle.$error }")
+				input(
+					type="text"
+					placeholder="What i will watch?"
+					v-model="taskTitle"
+					@keyup.enter="newTask"
+					:class="{ error: v$.taskTitle.$error }"
+					@change="v$.taskTitle.$touch()"
+				)
+				span.error-text(v-if="v$.taskTitle.required.$invalid ") {{ v$.taskTitle.required.$message }}
 			textarea(
 				type="text"
 				v-model="taskDescription"
@@ -102,23 +106,32 @@
 				) Send
 
 			.tag-list
-				.ui-tag__wrapper(
-					v-for="tag in tags"
-					:key="tag.title"
+				transition-group(
+					enter-active-class="animated fadeInLeft"
+					leave-active-class="animated fadeOutDown"
 				)
-					.ui-tag(
-						@click="addTagUsed(tag)"
-						:class="{used: tag.used}"
+					.ui-tag__wrapper(
+						v-for="tag in tags"
+						:key="tag.title"
 					)
-						span.tag-title {{ tag.title }}
-						span.button-close
+						.ui-tag(
+							@click="addTagUsed(tag)"
+							:class="{used: tag.used}"
+						)
+							span.tag-title {{ tag.title }}
+							span.button-close
 			.button.button--round.button-primary(
 				@click="newTask"
 			) Send
 </template>
 
 <script>
+import { useVuelidate } from '@vuelidate/core'
+import { required } from '@vuelidate/validators'
 export default {
+	setup () {
+		return {v$: useVuelidate()}
+	},
 	data () {
 		return {
 			// Tags
@@ -152,8 +165,13 @@ export default {
 			}
 			this.$store.dispatch('newTag', tag)
 		},
-		newTask () {
-			if(this.taskTitle === '') return
+		async newTask () {
+      const result = await this.v$.$validate()
+      if (!result) {
+        // notify user form is invalid
+				this.submitStatus = 'ERROR'
+        return
+      }
 			let time;
 			if (this.whatWatch === 'Film') {
 				time = this.filmTime
@@ -170,7 +188,6 @@ export default {
 				completed: false,
 				editing: false,
 			}
-			console.log(task);
 			
 			this.$store.dispatch('newTask', task)
 
@@ -178,6 +195,7 @@ export default {
 			this.taskTitle = ''
 			this.taskDescription = ''
 			this.tagUsed = []
+			this.v$.$reset()
 			for(let i = 0; i < this.tags.length; i++) {
 				this.tags[i].used = false
 			}
@@ -209,6 +227,13 @@ export default {
 		tags() {
 			return this.$store.getters.tags
 		}		
+	},
+	validations() {
+		return {
+			taskTitle: {
+				required
+			},
+		}
 	}
 }
 </script>
@@ -226,6 +251,25 @@ export default {
 		&:last-child
 			margin-right 0
 
+
+.form-item
+	.error-text
+		display none
+		font-size 14px
+		color #fc5c65
+	&.errorInput
+		.error-text
+			display block
+			margin-left 10px
+			margin-bottom 5px
+
+input
+	&.error
+		margin-bottom 5px
+		border-color #fc5c65
+		animation-duration .4s
+		animation-name shake
+
 .total-time
 	margin-bottom 20px
 
@@ -241,8 +285,10 @@ export default {
 	margin-bottom 20px
 
 .ui-tag__wrapper
+	position relative
 	margin-right 18px
 	margin-bottom 10px
+	background-color #fff
 	&:last-child
 		margin-right 0
 

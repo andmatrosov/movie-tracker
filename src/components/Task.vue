@@ -14,7 +14,7 @@
 					.button.button--round.button-default(
 						@click="filter = 'all'"
 					) All
-			.task-list
+			.task-list(v-auto-animate)
 				.task-item(
 					v-for="task in taskFilter"
 					:key="task.title"

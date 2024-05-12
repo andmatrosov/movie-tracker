@@ -1,5 +1,5 @@
 <template lang="pug">
-  .wrapper
+  .wrapper(v-auto-animate)
     header
       .navbar
         .container
