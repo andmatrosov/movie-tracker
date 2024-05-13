@@ -7,16 +7,20 @@ export default {
         description:
           "I directed this documentary challenging the myths linking growth with prosperity and fulfillment. It explores how our beliefs about economic and consumption",
         whatWatch: "Film",
+        time: '1 Hours 30 Minutes',
         completed: false,
         editing: false,
+        tags: [{title: 'Other'}]
       },
       {
         id: 2,
         title: "Game of thrones",
         description: "Best serials",
         whatWatch: "Serial",
+        time: '76 Hours 10 Minutes',
         completed: false,
         editing: false,
+        tags: [{title: 'Fantasy'}]
       },
     ],
   },

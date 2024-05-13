@@ -1,14 +1,16 @@
 # movie-tracker
 
+![](https://github.com/andmatrosov/movie-tracker/blob/master/preview.png)
+
 This template should help get you started developing with Vue 3 in Vite.
 
-## Recommended IDE Setup
+## App Stack
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+- Vue 3
+- Vue Router
+- Vuex
+- Pug
+- Stylus
 
 ## Project Setup
 
